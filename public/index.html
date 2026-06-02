@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bulk Mailer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f6f5f3;
+    --surface: #ffffff;
+    --border: #e4e2de;
+    --border-strong: #c8c5be;
+    --text: #1a1917;
+    --muted: #6b6966;
+    --hint: #a09d99;
+    --purple-bg: #f0effe;
+    --purple: #6c5ce7;
+    --purple-dark: #5a4bd1;
+    --purple-border: #c4bdf8;
+    --green: #0f9d6a;
+    --green-bg: #edfaf4;
+    --red: #d94040;
+    --red-bg: #fdf0f0;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 680px; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .header-icon {
+    width: 42px; height: 42px;
+    background: var(--purple-bg);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header-title { font-size: 22px; font-weight: 600; }
+  .header-sub { font-size: 13px; color: var(--muted); margin-top: 1px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hint);
+    margin-bottom: 1rem;
+  }
+
+  .connect-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  input[type="text"], input[type="email"], input[type="password"], textarea {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus { border-color: var(--purple); }
+  textarea { resize: vertical; line-height: 1.6; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-primary {
+    background: var(--purple-bg);
+    color: var(--purple-dark);
+    border-color: var(--purple-border);
+  }
+  .btn-primary:hover { background: #e4e1fc; }
+
+  .btn-send {
+    background: var(--purple);
+    color: #fff;
+    border-color: var(--purple-dark);
+    padding: 10px 24px;
+    font-size: 15px;
+  }
+  .btn-send:hover:not(:disabled) { background: var(--purple-dark); }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .status-pill.connected { background: var(--green-bg); color: var(--green); }
+  .status-pill.disconnected { background: var(--red-bg); color: var(--red); }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .tab {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--purple-bg); color: var(--purple-dark); border-color: var(--purple-border); }
+
+  .email-grid { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 8px; align-items: center; }
+  .email-grid-header { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 8px; margin-bottom: 6px; }
+  .email-grid-header span { font-size: 12px; color: var(--hint); }
+  #email-rows { display: flex; flex-direction: column; gap: 6px; }
+
+  .remove-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--hint);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.15s;
+  }
+  .remove-btn:hover { background: var(--red-bg); color: var(--red); border-color: #f5b8b8; }
+
+  .add-btn {
+    margin-top: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .add-btn:hover { background: var(--bg); color: var(--text); }
+
+  .drop-zone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 1.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .drop-zone:hover { background: var(--bg); }
+  .drop-zone-icon { font-size: 28px; margin-bottom: 8px; }
+  .drop-zone p { font-size: 13px; color: var(--muted); }
+  .drop-zone small { font-size: 12px; color: var(--hint); }
+
+  .count-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--purple-dark);
+    background: var(--purple-bg);
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  .progress-wrap { margin-top: 1rem; }
+  .progress-track {
+    height: 5px;
+    background: var(--bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .log-box {
+    background: #1a1917;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+  }
+  .log-ok { color: #4ade80; }
+  .log-err { color: #f87171; }
+  .log-info { color: #94a3b8; }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  #status-text { font-size: 13px; color: var(--muted); }
+
+  .hint-text { font-size: 12px; color: var(--hint); margin-bottom: 0.75rem; }
+  code { font-family: 'DM Mono', monospace; background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-icon">📨</div>
+    <div>
+      <div class="header-title">Bulk Mailer</div>
+      <div class="header-sub">Send emails via Gmail SMTP</div>
+    </div>
+  </div>
+
+  <!-- Connect card -->
+  <div class="card">
+    <div class="card-label">Gmail connection</div>
+    <div id="connect-form">
+      <div class="connect-row">
+        <div>
+          <label>Gmail address</label>
+          <input type="email" id="gmail-user" placeholder="you@gmail.com" />
+        </div>
+        <div>
+          <label>App password</label>
+          <input type="password" id="gmail-pass" placeholder="xxxx xxxx xxxx xxxx" />
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="connect()">Connect →</button>
+      <p style="font-size:12px; color:var(--hint); margin-top:8px;">Generate app password: Google Account → Security → 2-Step Verification → App passwords</p>
+    </div>
+    <div id="connect-status" style="display:none; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span class="status-pill connected"><span class="dot"></span><span id="connected-email"></span></span>
+      <button class="btn" onclick="disconnect()" style="font-size:12px; padding:5px 12px;">Disconnect</button>
+    </div>
+  </div>
+
+  <!-- Recipients -->
+  <div class="card">
+    <div class="card-label">Recipients</div>
+    <div class="tabs">
+      <button class="tab active" id="tab-manual" onclick="switchMode('manual')">Manual entry</button>
+      <button class="tab" id="tab-csv" onclick="switchMode('csv')">CSV upload</button>
+    </div>
+
+    <div id="manual-section">
+      <div class="email-grid-header">
+        <span>Email</span><span>Name (optional)</span><span></span>
+      </div>
+      <div id="email-rows"></div>
+      <button class="add-btn" onclick="addRow()">+ Add recipient</button>
+    </div>
+
+    <div id="csv-section" style="display:none;">
+      <div class="drop-zone" onclick="document.getElementById('csv-file').click()">
+        <div class="drop-zone-icon">📄</div>
+        <p>Click to upload CSV file</p>
+        <small>Columns: email, name (optional)</small>
+      </div>
+      <input type="file" id="csv-file" accept=".csv" style="display:none;" />
+      <div id="csv-ok" style="display:none; margin-top:8px; font-size:13px; color:var(--green);">✓ <span id="csv-ok-text"></span></div>
+    </div>
+
+    <div id="count-badge-wrap"></div>
+  </div>
+
+  <!-- Email content -->
+  <div class="card">
+    <div class="card-label">Email content</div>
+    <p class="hint-text">Use <code>{{name}}</code> to personalize with recipient name.</p>
+    <div style="margin-bottom:10px;">
+      <label>Subject</label>
+      <input type="text" id="subject" placeholder="Hello from us!" />
+    </div>
+    <div>
+      <label>Body</label>
+      <textarea id="body" rows="6" placeholder="Hi {{name}},&#10;&#10;Your message here..."></textarea>
+    </div>
+  </div>
+
+  <!-- Send -->
+  <div class="bottom-bar">
+    <button class="btn btn-send" id="send-btn" onclick="startSending()" disabled>Send emails</button>
+    <span id="status-text"></span>
+  </div>
+
+  <div id="progress-wrap" style="display:none;" class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+
+</div>
+
+<script>
+let mode = 'manual';
+let csvRows = [];
+let rowCount = 0;
+let connected = false;
+
+function connect() {
+  const email = document.getElementById('gmail-user').value.trim();
+  const pass = document.getElementById('gmail-pass').value.trim();
+  if (!email || !pass) return alert('Email and app password required.');
+  fetch('http://localhost:3000/connect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, appPassword: pass })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      connected = true;
+      document.getElementById('connect-form').style.display = 'none';
+      const cs = document.getElementById('connect-status');
+      cs.style.display = 'flex';
+      document.getElementById('connected-email').textContent = d.email;
+      updateSendBtn();
+    } else {
+      alert('Connection failed: ' + d.error);
+    }
+  })
+  .catch(() => alert('Server not running. Run: node server.js'));
+}
+
+function disconnect() {
+  connected = false;
+  document.getElementById('connect-form').style.display = 'block';
+  document.getElementById('connect-status').style.display = 'none';
+  document.getElementById('gmail-pass').value = '';
+  updateSendBtn();
+}
+
+function switchMode(m) {
+  mode = m;
+  document.getElementById('manual-section').style.display = m === 'manual' ? 'block' : 'none';
+  document.getElementById('csv-section').style.display = m === 'csv' ? 'block' : 'none';
+  document.getElementById('tab-manual').className = 'tab' + (m === 'manual' ? ' active' : '');
+  document.getElementById('tab-csv').className = 'tab' + (m === 'csv' ? ' active' : '');
+  updateCount();
+}
+
+function addRow(email, name) {
+  rowCount++;
+  const id = rowCount;
+  const div = document.createElement('div');
+  div.className = 'email-grid';
+  div.id = 'row-' + id;
+  div.innerHTML = `
+    <input type="email" id="email-${id}" placeholder="name@example.com" value="${email||''}" oninput="updateCount()" />
+    <input type="text" id="name-${id}" placeholder="Name" value="${name||''}" />
+    <button class="remove-btn" onclick="removeRow(${id})" title="Remove">×</button>
+  `;
+  document.getElementById('email-rows').appendChild(div);
+  updateCount();
+}
+
+function removeRow(id) {
+  document.getElementById('row-' + id)?.remove();
+  updateCount();
+}
+
+function getManualRows() {
+  const rows = [];
+  document.querySelectorAll('#email-rows > div').forEach(div => {
+    const id = div.id.replace('row-', '');
+    const email = (document.getElementById('email-' + id)?.value || '').trim();
+    const name = (document.getElementById('name-' + id)?.value || '').trim();
+    if (email) rows.push({ email, name });
+  });
+  return rows;
+}
+
+function updateCount() {
+  const rows = mode === 'manual' ? getManualRows() : csvRows;
+  const wrap = document.getElementById('count-badge-wrap');
+  wrap.innerHTML = rows.length > 0 ? `<div class="count-badge">${rows.length} recipient${rows.length !== 1 ? 's' : ''} ready</div>` : '';
+  updateSendBtn();
+}
+
+function updateSendBtn() {
+  const rows = mode === 'manual' ? getManualRows() : csvRows;
+  document.getElementById('send-btn').disabled = !connected || rows.length === 0;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  }).filter(r => r.email);
+}
+
+document.getElementById('csv-file').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    csvRows = parseCSV(ev.target.result);
+    const ok = document.getElementById('csv-ok');
+    ok.style.display = 'block';
+    document.getElementById('csv-ok-text').textContent = `${csvRows.length} recipients loaded from ${file.name}`;
+    updateCount();
+  };
+  reader.readAsText(file);
+});
+
+async function startSending() {
+  const rows = mode === 'manual' ? getManualRows() : csvRows;
+  if (!rows.length || !connected) return;
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  const progressWrap = document.getElementById('progress-wrap');
+  progressWrap.style.display = 'block';
+  const log = document.getElementById('log-box');
+  const fill = document.getElementById('progress-fill');
+  const status = document.getElementById('status-text');
+  log.innerHTML = '';
+  fill.style.width = '0%';
+
+  const subject = document.getElementById('subject').value || '(no subject)';
+  const bodyTpl = document.getElementById('body').value || '';
+  let sent = 0, failed = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    const { email, name } = rows[i];
+    const text = bodyTpl.replace(/\{\{name\}\}/g, name || email);
+    status.textContent = `Sending ${i + 1} of ${rows.length}...`;
+
+    try {
+      const resp = await fetch('http://localhost:3000/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject, text })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        sent++;
+        log.innerHTML += `<div class="log-ok">✓ ${email}</div>`;
+      } else {
+        failed++;
+        log.innerHTML += `<div class="log-err">✗ ${email} — ${data.error}</div>`;
+      }
+    } catch (err) {
+      failed++;
+      log.innerHTML += `<div class="log-err">✗ ${email} — ${err.message}</div>`;
+    }
+
+    fill.style.width = Math.round(((i + 1) / rows.length) * 100) + '%';
+    log.scrollTop = log.scrollHeight;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  status.textContent = `Done — ${sent} sent, ${failed} failed.`;
+  btn.disabled = false;
+  btn.textContent = 'Send again';
+}
+
+addRow(); addRow();
+switchMode('manual');
+</script>
+</body>
+</html>
